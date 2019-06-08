@@ -16,7 +16,7 @@ var undeployedAllEnv =  require('./services/undeployedAllEnv.js')
 
 var app = express();
 
-const port = 4000;
+const port = process.env.PORT || 4000;
 //app.use(morgan('dev'));
 //body-parser as middleware configuration
 app.use(bodyParser.urlencoded({ extended: false }));
