@@ -31,7 +31,7 @@ app.all("*",oauth.oauthValidation);
 
 /* returns all proxies*/
 app.get('*/apis',getAllProxies.getAllProxies);
-app.get('*/zero-traffic',unUsedProxies.unUsedProxies);
+//app.get('*/zero-traffic',unUsedProxies.unUsedProxies);
 //get deployment details for proxy
 app.get('*/deployment-details',deploymentDetails.deploymentDetails);
 //undeploy proxy by env name and revision no
@@ -40,7 +40,7 @@ app.get('*/deployment-details',deploymentDetails.deploymentDetails);
 // //delete proxy from organization;
 // app.delete("*/delete-proxy/:proxyname",deleteProxy.deleteProxy);
 // //get product details
-// app.get("*/product-detail",productDetail.productDetail);
+app.get("*/product-detail",productDetail.productDetail);
 // //update product details
 // app.put("*/product-detail/:productname",updateProductDetail.updateProductDetail);
 
