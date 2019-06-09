@@ -17,7 +17,7 @@ exports.allUnUsedProxies = function (req, res) {
     ], function (err, response) {
         var apiResponse = {};
         apiResponse.count = response.length;
-        var path = utils.generateCsv(response.undePloyedProxies,"not-deployed-to-any-env");
+        var path = utils.generateCsv(response,"not-deployed-to-any-env");
         apiResponse.filePath = req.protocol + '://' + req.get('host')+"/files/"+path;
         apiResponse.proxies = response;
         res.send(apiResponse);
