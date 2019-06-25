@@ -1,5 +1,7 @@
 var main = require('./main.js');
+var error = require('./utility/error')
 exports.deploymentDetails = function(req,res){
+    try{
     var proxyname = req.query.proxyname;
     console.log("proxyname ",proxyname);
     var url = "/v1/o/ee-nonprod/apis/"+proxyname+"/deployments";
@@ -12,8 +14,9 @@ exports.deploymentDetails = function(req,res){
             "Authorization": req.headers.authorization
         }
     };
-    main.httpReq(options,(error,response)=>{
-        if(error){
+    main.httpReq(options,(err,response)=>{
+        try{
+        if(err){
             res.send(error);
         }
          var apiResponse ={};
@@ -21,13 +24,21 @@ exports.deploymentDetails = function(req,res){
          apiResponse.proxyname = response.name;
          console.log("response.environment ",response.environment);
          apiResponse.deploymentDetails = copyProxiesToArry(response.environment);
-         res.send(apiResponse);
+         if(!res.headersSent){
+            res.send(apiResponse);
+         }
+        }catch(e){
+            error.error(req,res);
+        }
       });
+    }catch(e){
+        error.error(req,res);
+    }
 };
 
 function copyProxiesToArry(environments){
-    console.log("environments ",environments);
     var proxieDetails = [];
+   
     environments.forEach((environment)=>{
         var proxy = {};
         proxy.name = environment.name;

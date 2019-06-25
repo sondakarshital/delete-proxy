@@ -1,7 +1,9 @@
 var main = require("./main.js");
 var async = require("async");
 var utils = require("./utility/report")
+var error = require('./utility/error')
 exports.undeployedAllEnv = function (req, res) {
+    try{
     async.waterfall([
         function (callback) {
             var appObj = {};
@@ -19,10 +21,13 @@ exports.undeployedAllEnv = function (req, res) {
         var path =utils.generateCsv(response.undePloyedProxies,"not-deployed-to-any-env");
         apiResponse.filePath = req.protocol + '://' + req.get('host')+"/files/"+path;
         apiResponse.proxies = response.undePloyedProxies;
-        
+        if(!res.headersSent){
         res.send(apiResponse);
-        
+        }
     });
+}catch(e){
+   error.error(req,res);
+}
 };
 
 function allProxy(appObj, callback) {
@@ -37,17 +42,22 @@ function allProxy(appObj, callback) {
             "Authorization": req.headers.authorization
         }
     };
-    main.httpReq(options, (error, response) => {
-        if (error) {
+    main.httpReq(options, (err, response) => {
+        try{
+        if (err) {
             res.send(error);
         } else {
             appObj.allProxies = response;
             callback(null, appObj);
         }
+    }catch(e){
+        error.error(appObj.req,appObj.res);
+    }
     });
 }
 
 function getDeploymentStatus(appObj, callback) {
+    try{
     var req = appObj.req;
     count = 0;
     var undePloyedProxies = [];
@@ -63,10 +73,12 @@ function getDeploymentStatus(appObj, callback) {
                 "Authorization": req.headers.authorization
             }
         };
-        main.httpReq(options, (error, response) => {
-            if (error) {
-                console.log("error ", error);
-                return callback(error, null);
+        main.httpReq(options, (err, response) => {
+            try{
+                asas.dasd;
+            if (err) {
+                console.log("error ", err);
+                return callback(err, null);
             }
             count++;
             if (response.environment.length == 0) {
@@ -77,6 +89,14 @@ function getDeploymentStatus(appObj, callback) {
                 appObj.undePloyedProxies = undePloyedProxies;
                 return callback(null, appObj);
             }
+        }catch(e){
+            if(!appObj.res.headersSent){
+                error.error(appObj.req,appObj.res);
+            }
+        }
         });
-    })
+    });
+}catch(e){
+    error.error(appObj.req,appObj.res);
+}
 }

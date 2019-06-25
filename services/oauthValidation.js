@@ -1,5 +1,6 @@
 var main = require("./main.js");
 exports.oauthValidation = function (req, res, next) {
+    try{
     if (!req.headers.username || !req.headers.password) {
         var response = {
             "code": "Unauthorized",
@@ -12,6 +13,9 @@ exports.oauthValidation = function (req, res, next) {
         req.headers.authorization = main.base64Value(req.headers.username, req.headers.password);
         next();
     }
+}catch(e){
+    res.send("OOps!!!Something went wrong..Try again..");
+}
 }
 
 

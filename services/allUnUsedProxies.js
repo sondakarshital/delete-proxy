@@ -1,7 +1,9 @@
 var main = require("./main.js");
 var async = require("async");
 var utils = require("./utility/report");
+var error = require('./utility/error')
 exports.allUnUsedProxies = function (req, res) {
+    try{
     async.waterfall([
         function (callback) {
             var appObj = {};
@@ -20,13 +22,17 @@ exports.allUnUsedProxies = function (req, res) {
         var path = utils.generateCsv(response,"not-deployed-to-any-env");
         apiResponse.filePath = req.protocol + '://' + req.get('host')+"/files/"+path;
         apiResponse.proxies = response;
+        if(!res.headersSent){
         res.send(apiResponse);
-        
+        }
     });
+}catch(e){
+    error.error(req,res);
+}
 };
 
 function zeroTrafficProxyDetails (appObj, callback) {
-    console.log("inside zeroTrafficProxyDetails");
+    try{
     var req = appObj.req;
     var res = appObj.res;
     var formattedFromDate = req.query.fromDate;
@@ -51,22 +57,32 @@ function zeroTrafficProxyDetails (appObj, callback) {
     envs.forEach((env, index, envs) => {
         var url = "/v1/o/ee-nonprod/e/" + env + "/stats/apis?select=sum(message_count)&timeUnit=month&" + "timeRange=" + formattedFromDate + "%2000:00~" + formattedToDate + "%2023:59";
         options.path = url;
-        main.httpReq(options, (error, response) => {
-            if (error) {
-                res.send(error);
+        main.httpReq(options, (err, response) => {
+            try{
+            if (err) {
+                res.send(err);
             }
-            //console.log("response 1234",JSON.stringify(response.environments[0].dimensions.length))
             // ... represents spread operators
              proxiesArray.push(...copyProxiesToArry(response.environments[0].dimensions));
             if (index == envs.length - 1) {
                 appObj.proxiesArray = proxiesArray;
                 return callback(null, appObj);
             }
+        }
+        catch(e){
+            if(!res.headersSent){
+                error.error(appObj.req,appObj.res);
+            }
+            }
         });
     });
+}catch(e){
+    error.error(appObj.req,appObj.res);
+}
 }
 
 function allProxies(appObj, callback){
+    try{
     var req = appObj.req;
     var res = appObj.res;
     var options = {
@@ -78,14 +94,21 @@ function allProxies(appObj, callback){
             "Authorization": req.headers.authorization
         }
     };
-    main.httpReq(options, (error, response) => {
-        if (error) {
-            res.send(error);
+    main.httpReq(options, (err, response) => {
+        try{
+        if (err) {
+            res.send(err);
         } else {
             appObj.allProxies = response;
             callback(null, appObj);
         }
+    }catch(e){
+        error.error(appObj.req,appObj.res);
+    }
     });
+}catch(e){
+    error.error(appObj.req,appObj.res);
+}
 }
 
 function uniqueProxies (appObj, callback) {
@@ -107,8 +130,12 @@ function copyProxiesToArry (dimensions) {
 }
 
 function finalResponse(appObj, callback){
+    try{
+        
     finalArray = appObj.allProxies.filter(x => appObj.proxiesArray.includes(x));
     finalArray = appObj.allProxies.filter(x => !finalArray.includes(x));
-    console.log("final array ",finalArray);
     return callback(null,finalArray);
+    }catch(e){
+        error.error(appObj.req,appObj.res);
+    }
 }
