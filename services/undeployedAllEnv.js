@@ -75,7 +75,6 @@ function getDeploymentStatus(appObj, callback) {
         };
         main.httpReq(options, (err, response) => {
             try{
-                asas.dasd;
             if (err) {
                 console.log("error ", err);
                 return callback(err, null);
